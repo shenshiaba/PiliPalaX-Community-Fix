@@ -1,3 +1,41 @@
+bool? _parseBool(dynamic value) {
+  if (value == null) {
+    return null;
+  }
+  if (value is bool) {
+    return value;
+  }
+  if (value is num) {
+    return value != 0;
+  }
+  if (value is String) {
+    final String normalized = value.toLowerCase();
+    if (normalized == 'true' || normalized == '1') {
+      return true;
+    }
+    if (normalized == 'false' || normalized == '0') {
+      return false;
+    }
+  }
+  return null;
+}
+
+int? _parseInt(dynamic value) {
+  if (value == null) {
+    return null;
+  }
+  if (value is int) {
+    return value;
+  }
+  if (value is num) {
+    return value.toInt();
+  }
+  if (value is String) {
+    return int.tryParse(value) ?? double.tryParse(value)?.toInt();
+  }
+  return null;
+}
+
 class FollowUpModel {
   FollowUpModel({
     this.liveUsers,
@@ -29,7 +67,7 @@ class LiveUsers {
   List<LiveUserItem>? items;
 
   LiveUsers.fromJson(Map<String, dynamic> json) {
-    count = json['count'];
+    count = _parseInt(json['count']);
     group = json['group'];
     items = json['items']
         .map<LiveUserItem>((e) => LiveUserItem.fromJson(e))
@@ -60,10 +98,10 @@ class LiveUserItem {
 
   LiveUserItem.fromJson(Map<String, dynamic> json) {
     face = json['face'];
-    isReserveRecall = json['is_reserve_recall'];
+    isReserveRecall = _parseBool(json['is_reserve_recall']);
     jumpUrl = json['jump_url'];
-    mid = json['mid'];
-    roomId = json['room_id'];
+    mid = _parseInt(json['mid']);
+    roomId = _parseInt(json['room_id']);
     title = json['title'];
     uname = json['uname'];
   }
@@ -87,9 +125,9 @@ class UpItem {
 
   UpItem.fromJson(Map<String, dynamic> json) {
     face = json['face'];
-    hasUpdate = json['has_update'];
+    hasUpdate = _parseBool(json['has_update']);
     // isReserveRecall = json['is_reserve_recall'];
-    mid = json['mid'];
+    mid = _parseInt(json['mid']);
     uname = json['uname'];
   }
 }

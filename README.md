@@ -1,187 +1,93 @@
 <div align="center">
-    <img width="200" height="200" src="https://github.com/orz12/PiliPalaX/blob/main/assets/images/logo/logo_android.png">
+  <img width="160" height="160" src="assets/images/logo/logo_android.png" alt="PiliPalaX logo">
+  <h1>PiliPalaX Community Fix</h1>
+  <p>PiliPalaX 的非官方、一次性社区修复版本</p>
+  <p>
+    <img src="https://img.shields.io/badge/status-one--time%20fix-orange" alt="one-time fix">
+    <img src="https://img.shields.io/badge/license-GPLv3-blue" alt="GPLv3">
+    <img src="https://img.shields.io/badge/Android-release-green" alt="Android release">
+  </p>
 </div>
 
+> PiliPalaX 的非官方、一次性社区修复版本。
 
+本仓库基于 [@orz12/PiliPalaX](https://github.com/orz12/PiliPalaX)，其上游为 [@guozhigq/pilipala](https://github.com/guozhigq/pilipala)。仓库保留完整上游 Git 历史，并继续遵循 GNU General Public License v3.0（GPLv3）。
 
-<div align="center">
-    <h1>PiliPalaX</h1>
-<div align="center">
-    
-![GitHub repo size](https://img.shields.io/github/repo-size/orz12/pilipala) 
-![GitHub Repo stars](https://img.shields.io/github/stars/orz12/pilipala) 
-![GitHub all releases](https://img.shields.io/github/downloads/orz12/pilipala/total) 
-</div>
-    <p>使用Flutter开发的BiliBili第三方客户端</p>
-    
-<img src="https://github.com/orz12/PiliPalaX/blob/main/assets/screenshots/510shots_so.png" width="32%" alt="home" />
-<img src="https://github.com/orz12/PiliPalaX/blob/main/assets/screenshots/174shots_so.png" width="32%" alt="home" />
-<img src="https://github.com/orz12/PiliPalaX/blob/main/assets/screenshots/850shots_so.png" width="32%" alt="home" />
-<br/>
-<img src="https://github.com/orz12/PiliPalaX/blob/main/assets/screenshots/main_screen.png" width="96%" alt="home" />
-<br/>
-</div>
+本版本只为恢复已经影响实际使用的页面功能而制作，不代表原作者，不是官方续作，也不承诺持续维护。
 
-## 开发环境
+## 本次修复
 
-为临时修复高于3.22.3版本flutter中文字重的bug，使用flutter 3.24.4(stable)，然后在flutter自身的目录中执行
+### 动态页
+
+- 兼容 B 站动态接口中布尔字段偶发返回 `0/1` 或字符串的情况。
+- 兼容部分数字字段以字符串形式返回，避免类型转换异常导致动态页无法加载。
+- 主要处理 `type 'int' is not a subtype of type 'bool?'` 一类错误。
+
+### 直播首页
+
+- 修复直播首页长期出现 `-352`、无法正常加载的问题。
+- 恢复直播分区、推荐直播及分页展示。
+- 保留原项目的页面布局和交互方式。
+
+## 下载与安装
+
+请前往本仓库右侧的 **Releases** 下载 Android APK。
+
+本版本使用社区维护者自己的签名证书，与原 PiliPalaX 正式版签名不同。如果手机中已经安装原作者发布的正式版，Android 可能不允许直接覆盖安装，需要先备份应用数据并卸载旧版。Debug 版使用不同包名时通常可以并存。
+
+## 项目定位
+
+- 这是一次性兼容修复，不是 PiliPalaX 的正式继任项目。
+- 不以任何形式代表、冒充或替代 PiliPala、PiliPalaX 及其原作者。
+- 不承诺功能更新、接口追踪、长期维护或问题响应。
+- 欢迎查看、研究和验证代码；如需继续维护，请遵守 GPLv3 和上游署名要求。
+
+## 构建
+
+已验证的 Android 构建环境：
+
+- Flutter 3.24.4
+- Dart 3.5.4
+- Java 21
+- Android SDK 34 / NDK 27.0.12077973
+- 使用仓库锁定依赖，不主动升级 `pubspec.lock`
+
 ```bash
-git cherry-pick d4124bd --strategy-option theirs
-flutter --version
+export PUB_HOSTED_URL=https://pub.flutter-io.cn
+export FLUTTER_STORAGE_BASE_URL=https://storage.flutter-io.cn
+flutter pub get --enforce-lockfile
+flutter build apk --release --no-pub
 ```
-以更换Framework和Engine版本（之后flutter doctor就会显示为3.24.5-0.0.pre.1）如下：
 
-```bash
-[√] Flutter (Channel stable, 3.24.5-0.0.pre.1, on Microsoft Windows [版本 10.0.19045.5073], locale zh-CN)
-    • Flutter version 3.24.5-0.0.pre.1 on channel stable at C:\others\flutter
-    • Upstream repository https://github.com/flutter/flutter.git
-    • Framework revision 1d5ace7b10 (4 months ago), 2024-07-24 00:10:30 -0400
-    • Engine revision 1572635432
-    • Dart version 3.6.0 (build 3.6.0-75.0.dev)
-    • DevTools version 2.37.1
-    • Pub download mirror https://pub.flutter-io.cn
-    • Flutter download mirror https://storage.flutter-io.cn
-[√] Windows Version (Installed version of Windows is version 10 or higher)
-[✓] Android toolchain - develop for Android devices (Android SDK version 34.0.0)
-[✓] Xcode - develop for iOS and macOS (Xcode 15.1)
-[✓] Chrome - develop for the web
-[✓] Android Studio (version 2024.2)
-[✓] VS Code (version 1.95.2)
-[✓] Connected device (4 available)
-[✓] Network resources
+当前锁文件记录的是上述 Flutter 中文社区镜像源；如不设置对应环境变量，旧版 Dart Pub 会把镜像来源差异误判为依赖变化并拒绝严格锁定安装。
 
-```
-注：Framework revision XXXXXX可能会不一致，但后续时间应该是一致的
-<br/>
-Android相关版本：
-> JDK: 21.0.4
-> gradle: 8.10.2
-> kotlin: 2.1.0
-> minSdk: 21
-> targetSdk: 34
-> compileSdk: 34
+Release 构建需要使用你自己的 Android 签名密钥。请勿将签名密钥、密码或 `key.properties` 提交到仓库。
 
-下载后，如果Android编译失败并报了签名相关的问题（例如缺少jks文件等），请保证项目目录下的Android文件夹内存在key.properties，且里面的内容类似于
-```text
-storePassword=aaaaaaaa
-keyPassword=bbbbbbbb
-keyAlias=cccccccc
-storeFile=C:/dd/dddddd.jks
-```
-这些占位符填写的内容和你生成jks证书文件时输入的相匹配。如果你没有jks，可以使用keytool等工具生成，具体过程这里不列出，可自行搜索。
-<br/>
+## 致谢与想说的话
 
+我是一名使用 B 站十年的大会员用户。一年前开始使用折叠屏手机时，我了解到 PiliPalaX，此后一直高强度使用至今。
 
-## 技术交流
+我由衷感谢 [@guozhigq](https://github.com/guozhigq) 开发的 PiliPala、[@orz12](https://github.com/orz12) 开发的 PiliPalaX，以及两个项目的[所有贡献者](https://github.com/orz12/PiliPalaX/graphs/contributors)。感谢你们创造了这个项目，也感谢那些宝石般珍贵、真正从用户需求出发的自定义功能。
 
-Telegram: https://t.me/+162zlPtZlT9hNWVl
+这一年里，直播页面一直受到 `-352` 问题影响；大约两个月前，动态页也出现了故障。在得知作者不会继续更新，并了解到其中一部分原因后，我完全理解并尊重停止更新的决定。因此，在完成这次补丁后，我也不会以任何形式继续更新或维护本项目。
 
+再次由衷感谢 B 站、PiliPala 与 PiliPalaX 的作者和所有贡献者；也感谢 OpenAI Codex 在本次问题排查、代码检查、构建、归档和发布准备过程中提供的协助。最后，谨代表参与本次 Debug、测试和反馈的朋友，向所有 PiliPala 系列用户表示感谢。
 
-<br/>
+## 免责声明
 
-## 功能
+1. 本项目为个人学习、研究和兼容性测试用途的非官方社区版本，与哔哩哔哩（Bilibili）、PiliPala、PiliPalaX 原作者及其贡献者不存在隶属、代理、合作或背书关系。
+2. 本次补丁没有新增或调用 B 站非公开接口，不破解、绕过或干预平台的访问控制、付费机制及安全措施。
+3. 本项目不收集、上传或留存用户的接口参数、设备参数、账号信息、行为数据或平台机制信息；使用者仍应自行检查代码和网络行为。
+4. 项目不提供、存储或分发任何 B 站视频、音频及其他受版权保护的内容，相关内容与服务均由其权利人或平台提供。
+5. 使用者应遵守中华人民共和国现行法律法规、所在地法律法规、B 站用户协议及相关权利人的要求。不得将本项目用于违法违规、侵权、商业倒卖、规避平台规则或损害任何第三方权益的活动。
+6. 本学习版本仅供临时体验与研究。沿用上游项目的提示：请在下载后 24 小时内删除；该提示属于项目使用声明，不构成对任何法律规则的解释或替代。
+7. 本项目按 GPLv3 及“现状”提供，不作任何明示或默示担保。使用、安装或修改本项目所产生的风险由使用者自行承担。
+8. 如权利人认为本仓库中的内容侵犯其合法权益，请通过 GitHub Issue 联系，并提供必要的权利证明和具体链接，以便核查处理。
 
-目前着重移动端(Android、iOS)和Pad端，暂时没有适配桌面端、手表端等
+## 许可证与来源
 
-<br/>
+本项目继续采用 [GNU General Public License v3.0](LICENSE)。分发修改版本或 APK 时，应同时向接收者提供对应源代码、保留许可证与作者署名，并明确标注修改内容。
 
-
-- [x] 推荐视频列表(app端)
-- [x] 最热视频列表
-- [x] 热门直播
-- [x] 番剧列表
-- [x] 屏蔽黑名单内用户视频
-- [x] 无痕模式（播放视为未登录）
-- [x] 游客模式（推荐视为未登录）
-
-- [x] 用户相关
-  - [x] 粉丝、关注用户、拉黑用户查看
-  - [x] 用户主页查看
-  - [x] 关注/取关用户
-  - [ ] 离线缓存
-  - [x] 稍后再看
-  - [x] 观看记录
-  - [x] 我的收藏
-  - [x] 站内私信
-  
-- [x] 动态相关
-  - [x] 全部、投稿、番剧分类查看
-  - [x] 动态评论查看
-  - [x] 动态评论回复功能
-
-- [x] 视频播放相关
-  - [x] 双击快进/快退
-  - [x] 双击播放/暂停
-  - [x] 垂直方向调节亮度/音量
-  - [x] 垂直方向上滑全屏、下滑退出全屏
-  - [x] 水平方向手势快进/快退
-  - [x] 全屏方向设置
-  - [x] 倍速选择/长按2倍速
-  - [x] 硬件加速（视机型而定）
-  - [x] 画质选择（高清画质未解锁）
-  - [x] 音质选择（视视频而定）
-  - [x] 解码格式选择（视视频而定）
-  - [x] 弹幕
-  - [ ] 直播弹幕
-  - [x] 字幕
-  - [x] 记忆播放
-  - [x] 视频比例：高度/宽度适应、填充、包含等
-     
-- [x] 搜索相关
-  - [x] 热搜
-  - [x] 搜索历史
-  - [x] 默认搜索词
-  - [x] 投稿、番剧、直播间、用户搜索
-  - [x] 视频搜索排序、按时长筛选
-    
-- [x] 视频详情页相关
-  - [x] 视频选集(分p)切换
-  - [x] 点赞、投币、收藏/取消收藏
-  - [x] 相关视频查看
-  - [x] 评论用户身份标识
-  - [x] 评论(排序)查看、二楼评论查看
-  - [x] 主楼、二楼评论回复功能
-  - [x] 评论点赞
-  - [x] 评论笔记图片查看、保存
-
-- [x] 设置相关
-  - [x] 画质、音质、解码方式预设      
-  - [x] 图片质量设定
-  - [x] 主题模式：亮色/暗色/跟随系统
-  - [x] 震动反馈(可选)
-  - [x] 高帧率
-  - [x] 自动全屏
-  - [x] 横屏适配
-- [ ] 等等
-
-<br/>
-
-## 下载
-
-可以通过右侧release进行下载或拉取代码到本地进行编译
-
-<br/>
-
-## 声明
-
-此项目（PiliPalaX）是个人为了兴趣而开发, 仅用于学习和测试，请于下载后24小时内删除。
-所用API皆从官方网站收集, 不提供任何破解内容。
-在此致敬原作者：[guozhigq/pilipala](https://github.com/guozhigq/pilipala)
-本仓库做了更激进的修改，感谢原作者的开源精神。
-
-感谢使用
-
-
-<br/>
-
-## 致谢
-
-- [bilibili-API-collect](https://github.com/SocialSisterYi/bilibili-API-collect)
-- [flutter_meedu_videoplayer](https://github.com/zezo357/flutter_meedu_videoplayer)
-- [media-kit](https://github.com/media-kit/media-kit)
-- [dio](https://pub.dev/packages/dio)
-- 等等
-
-<br/>
-<br/>
-<br/>
+- 上游项目：[guozhigq/pilipala](https://github.com/guozhigq/pilipala)
+- 直接来源：[orz12/PiliPalaX](https://github.com/orz12/PiliPalaX)
+- 社区修复维护者：[@shenshiaba](https://github.com/shenshiaba)

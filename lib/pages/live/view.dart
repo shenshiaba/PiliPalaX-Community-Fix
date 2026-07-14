@@ -11,6 +11,7 @@ import 'package:PiliPalaX/pages/home/index.dart';
 import 'package:PiliPalaX/pages/main/index.dart';
 
 import '../../utils/grid.dart';
+import '../../models/live/item.dart';
 import 'controller.dart';
 import 'widgets/live_item.dart';
 
@@ -24,8 +25,8 @@ class LivePage extends StatefulWidget {
 class _LivePageState extends State<LivePage>
     with AutomaticKeepAliveClientMixin {
   final LiveController _liveController = Get.put(LiveController());
-  late Future _futureBuilderFuture;
   late ScrollController scrollController;
+  late VoidCallback scrollListener;
 
   @override
   bool get wantKeepAlive => true;
@@ -33,38 +34,40 @@ class _LivePageState extends State<LivePage>
   @override
   void initState() {
     super.initState();
-    _futureBuilderFuture = _liveController.queryLiveList('init');
+    _liveController.queryLiveList('init');
     scrollController = _liveController.scrollController;
-    StreamController<bool> mainStream =
+    final StreamController<bool> mainStream =
         Get.find<MainController>().bottomBarStream;
-    StreamController<bool> searchBarStream =
+    final StreamController<bool> searchBarStream =
         Get.find<HomeController>().searchBarStream;
-    scrollController.addListener(
-      () {
-        if (scrollController.position.pixels >=
-            scrollController.position.maxScrollExtent - 200) {
-          EasyThrottle.throttle('liveList', const Duration(milliseconds: 200),
-              () {
-            _liveController.onLoad();
-          });
-        }
+    scrollListener = () {
+      if (!scrollController.hasClients) {
+        return;
+      }
+      if (scrollController.position.pixels >=
+          scrollController.position.maxScrollExtent - 200) {
+        EasyThrottle.throttle('liveList', const Duration(milliseconds: 300),
+            () {
+          _liveController.onLoad();
+        });
+      }
 
-        final ScrollDirection direction =
-            scrollController.position.userScrollDirection;
-        if (direction == ScrollDirection.forward) {
-          mainStream.add(true);
-          searchBarStream.add(true);
-        } else if (direction == ScrollDirection.reverse) {
-          mainStream.add(false);
-          searchBarStream.add(false);
-        }
-      },
-    );
+      final ScrollDirection direction =
+          scrollController.position.userScrollDirection;
+      if (direction == ScrollDirection.forward) {
+        mainStream.add(true);
+        searchBarStream.add(true);
+      } else if (direction == ScrollDirection.reverse) {
+        mainStream.add(false);
+        searchBarStream.add(false);
+      }
+    };
+    scrollController.addListener(scrollListener);
   }
 
   @override
   void dispose() {
-    scrollController.removeListener(() {});
+    scrollController.removeListener(scrollListener);
     super.dispose();
   }
 
@@ -81,48 +84,73 @@ class _LivePageState extends State<LivePage>
       child: RefreshIndicator(
         displacement: 10.0,
         edgeOffset: 10.0,
-        onRefresh: () async {
-          return await _liveController.onRefresh();
-        },
+        onRefresh: _liveController.onRefresh,
         child: CustomScrollView(
           cacheExtent: 3500,
           physics: const AlwaysScrollableScrollPhysics(),
-          controller: _liveController.scrollController,
+          controller: scrollController,
           slivers: [
             SliverPadding(
-              // 单列布局 EdgeInsets.zero
               padding:
                   const EdgeInsets.fromLTRB(0, StyleString.cardSpace, 0, 0),
-              sliver: FutureBuilder(
-                future: _futureBuilderFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.done) {
-                    if (snapshot.data == null) {
-                      return const SliverToBoxAdapter(child: SizedBox());
-                    }
-                    Map data = snapshot.data as Map;
-                    if (data['status']) {
-                      return SliverLayoutBuilder(
-                          builder: (context, boxConstraints) {
-                        return Obx(() => contentGrid(
-                            _liveController, _liveController.liveList));
-                      });
-                    } else {
-                      return HttpError(
-                        errMsg: data['msg'],
-                        fn: () {
-                          setState(() {
-                            _futureBuilderFuture =
-                                _liveController.queryLiveList('init');
-                          });
-                        },
-                      );
-                    }
-                  } else {
-                    return contentGrid(_liveController, []);
-                  }
-                },
-              ),
+              sliver: Obx(() {
+                if (_liveController.isInitialLoading.value &&
+                    _liveController.liveList.isEmpty) {
+                  return contentGrid(<LiveItemModel>[]);
+                }
+                if (_liveController.liveList.isEmpty &&
+                    _liveController.errorMessage.value.isNotEmpty) {
+                  return HttpError(
+                    errMsg: _liveController.errorMessage.value,
+                    fn: _liveController.retry,
+                  );
+                }
+                if (_liveController.liveList.isEmpty) {
+                  return const SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: 300,
+                      child: Center(child: Text('暂时没有直播内容')),
+                    ),
+                  );
+                }
+                return SliverMainAxisGroup(
+                  slivers: [
+                    contentGrid(_liveController.liveList),
+                    if (_liveController.isLoadingMore.value)
+                      const SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                      ),
+                    if (!_liveController.hasMore.value)
+                      const SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Center(child: Text('没有更多直播了')),
+                        ),
+                      ),
+                    if (_liveController.errorMessage.value.isNotEmpty)
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            children: [
+                              Text(
+                                _liveController.errorMessage.value,
+                                textAlign: TextAlign.center,
+                              ),
+                              TextButton(
+                                onPressed: _liveController.retry,
+                                child: const Text('点击重试'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              }),
             ),
           ],
         ),
@@ -130,7 +158,7 @@ class _LivePageState extends State<LivePage>
     );
   }
 
-  Widget contentGrid(ctr, liveList) {
+  Widget contentGrid(List<LiveItemModel> liveList) {
     return SliverGrid(
       gridDelegate: SliverGridDelegateWithExtentAndRatio(
         mainAxisSpacing: StyleString.cardSpace,
@@ -141,11 +169,11 @@ class _LivePageState extends State<LivePage>
       ),
       delegate: SliverChildBuilderDelegate(
         (BuildContext context, int index) {
-          return liveList!.isNotEmpty
+          return liveList.isNotEmpty
               ? LiveCardV(liveItem: liveList[index])
               : const VideoCardVSkeleton();
         },
-        childCount: liveList!.isNotEmpty ? liveList!.length : 10,
+        childCount: liveList.isNotEmpty ? liveList.length : 10,
       ),
     );
   }

@@ -65,7 +65,7 @@ class LiveCardV extends StatelessWidget {
                         child: Hero(
                           tag: heroTag,
                           child: NetworkImgLayer(
-                            src: liveItem.cover!,
+                            src: liveItem.cover ?? '',
                             width: maxWidth,
                             height: maxHeight,
                           ),
@@ -97,7 +97,7 @@ class LiveCardV extends StatelessWidget {
 }
 
 class LiveContent extends StatelessWidget {
-  final dynamic liveItem;
+  final LiveItemModel liveItem;
   const LiveContent({super.key, required this.liveItem});
   @override
   Widget build(BuildContext context) {
@@ -110,7 +110,7 @@ class LiveContent extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              liveItem.title,
+              liveItem.title ?? '未命名直播',
               textAlign: TextAlign.start,
               style: const TextStyle(
                 fontWeight: FontWeight.w500,
@@ -123,7 +123,7 @@ class LiveContent extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    liveItem.uname,
+                    liveItem.uname ?? '未知主播',
                     textAlign: TextAlign.start,
                     style: TextStyle(
                       fontSize:
@@ -144,7 +144,7 @@ class LiveContent extends StatelessWidget {
 }
 
 class VideoStat extends StatelessWidget {
-  final LiveItemModel? liveItem;
+  final LiveItemModel liveItem;
 
   const VideoStat({
     super.key,
@@ -171,14 +171,15 @@ class VideoStat extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            liveItem!.areaName!,
+            liveItem.areaName ?? '直播',
             style: const TextStyle(fontSize: 11, color: Colors.white),
-            semanticsLabel: "${liveItem!.areaName!}直播",
+            semanticsLabel: "${liveItem.areaName ?? '直播'}直播",
           ),
           Text(
-            liveItem!.watchedShow!['text_small'],
+            liveItem.watchedShow?['text_small']?.toString() ?? '',
             style: const TextStyle(fontSize: 11, color: Colors.white),
-            semanticsLabel: "${liveItem!.watchedShow!['text_small']}围观",
+            semanticsLabel:
+                "${liveItem.watchedShow?['text_small']?.toString() ?? ''}围观",
           ),
         ],
       ),

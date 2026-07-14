@@ -105,7 +105,8 @@ class Api {
   // https://app.bilibili.com/x/v2/view/like/triple
   // access_key	str	APP 登录 Token	APP 方式必要
   // aid	num	稿件 avid	必要
-  static const String oneThree = '${HttpString.appBaseUrl}/x/v2/view/like/triple';
+  static const String oneThree =
+      '${HttpString.appBaseUrl}/x/v2/view/like/triple';
 
   // 获取指定用户创建的所有收藏夹信息
   // 该接口也能查询目标内容id存在于那些收藏夹中
@@ -256,9 +257,9 @@ class Api {
   static const String fans = '/x/relation/fans';
 
   // 直播
-  // ?page=1&page_size=30&platform=web
+  // platform=web&web_location=444.7&w_rid=...&wts=...
   static const String liveList =
-      '${HttpString.liveBaseUrl}/xlive/web-interface/v1/second/getUserRecommend';
+      '${HttpString.liveBaseUrl}/xlive/web-interface/v1/index/getList';
 
   // 直播间详情
   // cid roomId
